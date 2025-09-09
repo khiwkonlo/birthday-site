@@ -5,14 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#ffc0d9" />
   <title>Happy Birthday!</title>
-  <!--
-    PERSONALIZE:
-      - Change NAME / THAI_MESSAGE / CARD_TEXT in the script.
-      - Tweak colors/timing via CSS vars (:root) and TIMINGS.
-  -->
   <style>
     :root{
-      /* Pink theme */
       --bg1:#ffe6f1; --bg2:#fff5fb; --bg3:#ffeef6;
       --text:#2d2a2e; --muted:#6b7280;
       --pink:#ff5fa2; --pink2:#ff93c2; --rose:#ff7aa2;
@@ -40,11 +34,8 @@
       padding:clamp(18px,4vw,36px);
       position:relative; overflow:hidden;
     }
-
-    /* Confetti canvas */
     .confetti{ position:absolute; inset:0; pointer-events:none; border-radius:var(--radius); }
 
-    /* Title & copy */
     h1{
       margin:0 0 8px; font-size:clamp(28px,5.8vw,52px);
       opacity:0; transform:translateY(8px) scale(.98);
@@ -61,17 +52,15 @@
 
     /* Cake */
     .cake{
-      width:min(360px,100%);           /* fit container on small phones */
+      width:min(360px,100%);
       margin:18px auto 8px; display:block;
       opacity:0; transform:translateY(18px) scale(.98);
       filter:drop-shadow(0 12px 24px rgba(0,0,0,.08));
       transition:opacity var(--speed) var(--ease), transform var(--speed) var(--ease);
     }
-    /* Fade/scale the cake away when the gift arrives */
-    .cake.vanish { opacity:0; transform:translateY(18px) scale(.95); }
+    .cake.vanish{ opacity:0; transform:translateY(18px) scale(.95); }
     .flame{ transform-origin:center; animation:flicker .9s infinite ease-in-out alternate; }
     @keyframes flicker{ from{transform:scale(1) translateY(0);opacity:.92} to{transform:scale(1.12) translateY(-1px);opacity:1} }
-    /* Smoke when candles are blown out */
     #smoke circle{ opacity:0; }
     #flames.out .flame{ animation:none }
     #flames.out .flame path{ animation:fadeout .6s forwards ease; }
@@ -79,7 +68,6 @@
     @keyframes fadeout{ to{opacity:0; transform:translateY(-6px) scale(.8);} }
     @keyframes rise{ 0%{opacity:0; transform:translateY(0) scale(.8)} 20%{opacity:.6} 100%{opacity:0; transform:translateY(-30px) scale(1.15)} }
 
-    /* Aura glow under cake */
     .aura{
       position:absolute; inset:auto 0 60px 0; margin:auto; width:360px; height:360px;
       border-radius:50%; pointer-events:none;
@@ -89,12 +77,12 @@
     }
     .aura.show{ opacity:1; transform:scale(1); }
 
-    /* Gift area */
+    /* Gift */
     #giftWrap{
-      width:min(360px,100%);           /* stay inside card */
+      width:min(360px,100%);
       margin:18px auto 0;
       position:relative;
-      display:grid; place-items:center; /* center children */
+      display:grid; place-items:center;
       opacity:0; transform:translateY(18px) scale(.98);
       transition:opacity var(--speed) var(--ease), transform var(--speed) var(--ease);
     }
@@ -103,22 +91,21 @@
     #gift .lid{ transform-origin:50% 85%; transition:transform 550ms var(--ease); }
     #gift.open .lid{ transform:rotate(-34deg) translateY(-8px); }
 
-    /* Card that slides out of gift — centered */
+    /* Card from gift (always centered) */
     .gift-card{
       position:absolute;
       bottom:52px;
-      inset-inline:0;                 /* center horizontally */
-      margin-inline:auto;
-      width:clamp(220px,92%,300px);
-      max-width:100%;
+      left:50%;
+      transform:translate(-50%, 16px) scale(.96);
+      width:min(300px,92%);
+      max-width:calc(100% - 16px);
       background:#fff; border-radius:16px;
       box-shadow:0 16px 40px rgba(255,95,162,.35), 0 8px 20px rgba(0,0,0,.08);
       padding:18px 20px; text-align:center; border:3px solid #ffd6eb;
-      transform:translateY(16px) scale(.96);   /* only move on Y so it stays centered */
       opacity:0;
       transition:transform var(--speed) var(--ease), opacity var(--speed) var(--ease);
     }
-    .gift-card.show{ transform:translateY(-80px) scale(1); opacity:1; }
+    .gift-card.show{ transform:translate(-50%, -80px) scale(1); opacity:1; }
     .gift-card h3{ margin:0 0 6px; font-size:20px; color:#ff3f8c; }
     .gift-card p{ margin:0; font-size:clamp(16px,3.6vw,20px); }
 
@@ -139,13 +126,11 @@
     .show{ opacity:1 !important; transform:none !important }
     .status{ margin-top:8px; font-size:14px; color:#16a34a; min-height:1.2em; }
 
-    /* Tiny phones */
     @media (max-width:380px){
       .btn{ padding:12px 16px; font-size:15px; }
       .actions{ gap:8px; }
     }
 
-    /* Reduced motion */
     @media (prefers-reduced-motion: reduce){
       .cake,.thai,h1,.btn,.aura,.gift-card,#giftWrap{transition:none !important}
       .flame{animation:none}
@@ -180,7 +165,6 @@
       <path d="M60,100 h200 v22
                c-12,6 -24,-6 -36,0 s-24,8 -36,0 s-24,-6 -36,0 s-24,8 -36,0 s-24,-6 -36,0 v-22 z"
             fill="url(#icing)"/>
-      <!-- Sprinkles -->
       <g opacity=".9">
         <circle cx="90" cy="132" r="3" fill="#ff5fa2"/>
         <circle cx="120" cy="139" r="3" fill="#a855f7"/>
@@ -189,13 +173,11 @@
         <circle cx="190" cy="118" r="3" fill="#3b82f6"/>
         <circle cx="140" cy="121" r="3" fill="#ef4444"/>
       </g>
-      <!-- Candles -->
       <g id="candles">
         <rect x="110" y="56" width="12" height="34" rx="3" fill="#a855f7"/>
         <rect x="154" y="46" width="12" height="44" rx="3" fill="#fb7185"/>
         <rect x="198" y="56" width="12" height="34" rx="3" fill="#22c55e"/>
       </g>
-      <!-- Flames & smoke -->
       <g id="flames">
         <g class="flame"><path d="M116,54 q6,-14 12,0 q-6,10 -12,0" fill="#ffd166"/></g>
         <g class="flame"><path d="M160,44 q6,-14 12,0 q-6,10 -12,0" fill="#ffd166"/></g>
@@ -210,12 +192,10 @@
 
     <!-- Gift + card -->
     <div id="giftWrap" aria-label="Gift">
-      <!-- Card -->
       <div id="giftCard" class="gift-card" role="group" aria-label="Card">
         <h3>🎁 Surprise</h3>
         <p>ไปรับของขวัญที่เอก</p>
       </div>
-      <!-- Gift box -->
       <svg id="gift" viewBox="0 0 360 240" role="img" aria-label="Gift box">
         <ellipse cx="180" cy="220" rx="130" ry="14" fill="#f1f5f9"/>
         <rect x="60" y="110" width="240" height="88" rx="14" fill="#ffc6dd"/>
@@ -339,7 +319,7 @@
         audioCtx = audioCtx || new AC();
         audioCtx.resume();
         const now = audioCtx.currentTime;
-        const notes = [261.63,329.63,392.00,523.25]; // C E G C
+        const notes = [261.63,329.63,392.00,523.25];
         notes.forEach((f,i)=>{
           const o = audioCtx.createOscillator(), g = audioCtx.createGain();
           o.type='triangle'; o.frequency.value=f;
@@ -361,9 +341,10 @@
       [headline, thai, cake, giftWrap, giftCard, aura].forEach(el=> el.classList.remove('show'));
       gift.classList.remove('open');
       document.getElementById('flames').classList.remove('out');
-      cake.classList.remove('vanish');   // clear fade-out state
-      unhide(cake);                      // ensure it can show again
-      unhide(startBtn); hide(blowBtn); hide(openGiftBtn); hide(replayBtn);
+      cake.classList.remove('vanish');
+      unhide(cake);
+      unhide(startBtn);                 // Show only Start at reset
+      hide(blowBtn); hide(openGiftBtn); hide(replayBtn);
       statusEl.textContent = '';
       particles.length = 0; ctx.clearRect(0,0,canvas.width,canvas.height);
     }
@@ -374,11 +355,11 @@
       setTimeout(()=> show(headline), TIMINGS.headline);
       setTimeout(()=> show(thai), TIMINGS.thai);
       setTimeout(()=> { show(cake); aura.classList.add('show'); }, TIMINGS.cake);
-      setTimeout(()=> { unhide(blowBtn); unhide(replayBtn); }, TIMINGS.buttons);
+      setTimeout(()=> { unhide(blowBtn); /* don't show replay yet */ }, TIMINGS.buttons);
 
       if(reduceMotion){
         [headline, thai, cake].forEach(show); aura.classList.add('show');
-        unhide(blowBtn); unhide(replayBtn);
+        unhide(blowBtn);
       }
     }
 
@@ -386,21 +367,23 @@
       const flames = document.getElementById('flames');
       if(!flames.classList.contains('out')){
         flames.classList.add('out');
-        // Show gift and hide cake
-        show(giftWrap);
-        cake.classList.remove('show');
+        hide(blowBtn);                   // 🔥 Hide "Blow out candles" after use
+        show(giftWrap);                  // Show gift
+        cake.classList.remove('show');   // Fade cake away
         cake.classList.add('vanish');
         aura.classList.remove('show');
-        setTimeout(()=> hide(cake), 650);  // remove from layout after fade
+        setTimeout(()=> hide(cake), 650);
         statusEl.textContent = 'Candles blown out! 🕯️';
         setTimeout(()=> { statusEl.textContent=''; unhide(openGiftBtn); }, 900);
       }
     }
 
     function openGift(){
-      gift.classList.add('open');  // lid lifts
-      show(giftCard);              // card slides up
-      launchConfetti(2200);        // confetti again
+      gift.classList.add('open');        // Lid opens
+      show(giftCard);                    // Card slides out
+      hide(openGiftBtn);                 // ❌ Hide "Open gift" once opened
+      launchConfetti(2200);              // Celebration
+      unhide(replayBtn);                 // ✅ Show Replay at the end only
       statusEl.textContent = 'Surprise opened 🎁';
       setTimeout(()=> statusEl.textContent='', 1500);
     }
