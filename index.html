@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#ffc0d9" />
+  <title>Happy Birthday!</title>
+  <!--
+    QUICK EDITS
+    - Change NAME or THAI_MESSAGE in the script block.
+    - Tweak colors/timing via CSS variables (:root) and TIMINGS.
+  -->
+  <style>
+    :root{
+      /* Pink theme */
+      --bg1:#ffe6f1; --bg2:#fff5fb; --bg3:#ffeef6;
+      --text:#2d2a2e; --muted:#6b7280;
+      --pink:#ff5fa2; --pink2:#ff93c2; --rose:#ff7aa2;
+      --card:#ffffffee; --radius:26px; --shadow:0 28px 64px rgba(0,0,0,.12);
+      --speed:620ms; --ease:cubic-bezier(.2,.7,.2,1);
+      --accent:#ffd1e6; --gold:#ffd166;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans Thai","Noto Color Emoji",sans-serif;
+      background:
+        radial-gradient(1200px 600px at -10% -10%, var(--bg1), transparent 60%),
+        radial-gradient(1000px 600px at 110% -10%, var(--bg2), transparent 60%),
+        radial-gradient(1000px 600px at 50% 120%, var(--bg3), transparent 60%),
+        linear-gradient(135deg,#fff,#fff7fb);
+      color:var(--text); min-height:100dvh;
+      display:grid; place-items:center; overflow-x:hidden;
+    }
+    .wrap{
+      width:min(780px,94vw); background:var(--card);
+      border-radius:var(--radius); box-shadow:var(--shadow);
+      padding:clamp(22px,4vw,42px); position:relative; overflow:hidden;
+    }
+    /* Confetti canvas */
+    .confetti{ position:absolute; inset:0; pointer-events:none; border-radius:var(--radius); }
+
+    h1{
+      margin:0 0 8px; font-size:clamp(28px,5.8vw,52px);
+      opacity:0; transform:translateY(8px) scale(.98);
+      transition:opacity var(--speed) var(--ease), transform var(--speed) var(--ease);
+      background:linear-gradient(90deg,var(--pink),var(--rose));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    .lead{ margin:6px 0 18px; color:var(--muted); font-size:clamp(14px,2.5vw,18px); }
+    .thai{
+      font-size:clamp(18px,3.6vw,26px); line-height:1.55; margin:18px 0 12px;
+      opacity:0; transform:translateY(8px) scale(.985);
+      transition:opacity var(--speed) var(--ease) .05s, transform var(--speed) var(--ease) .05s;
+    }
+
+    /* Cake */
+    .cake{
+      width:min(400px,84vw); margin:18px auto 8px; display:block;
+      opacity:0; transform:translateY(18px) scale(.98);
+      filter:drop-shadow(0 12px 24px rgba(0,0,0,.08));
+      transition:opacity var(--speed) var(--ease), transform var(--speed) var(--ease);
+    }
+    /* Fade/scale the cake away when the gift arrives */
+    .cake.vanish { opacity: 0; transform: translateY(18px) scale(.95); }
+    .flame{ transform-origin:center; animation:flicker .9s infinite ease-in-out alternate; }
+    @keyframes flicker{ from{transform:scale(1) translateY(0);opacity:.92} to{transform:scale(1.12) translateY(-1px);opacity:1} }
+    #smoke circle{ opacity:0; }
+    #flames.out .flame{ animation:none }
+    #flames.out .flame path{ animation:fadeout .6s forwards ease; }
+    #flames.out + g#smoke circle{ animation:rise 1.2s ease-out forwards; }
+    @keyframes fadeout{ to{opacity:0; transform:translateY(-6px) scale(.8);} }
+    @keyframes rise{ 0%{opacity:0; transform:translateY(0) scale(.8)} 20%{opacity:.6} 100%{opacity:0; transform:translateY(-30px) scale(1.15)} }
+
+    /* Gift (SVG) */
+    #giftWrap{
+      width:min(360px,78vw); margin:18px auto 0; position:relative;
+      opacity:0; transform:translateY(18px) scale(.98);
+      transition:opacity var(--speed) var(--ease), transform var(--speed) var(--ease);
+    }
+    #giftWrap.show{ opacity:1; transform:none; }
+    #gift{ width:100%; display:block; }
+    #gift .lid{ transform-origin:50% 85%; transition:transform 550ms var(--ease); }
+    #gift.open .lid{ transform:rotate(-34deg) translateY(-8px); }
+    /* Card (HTML) emerging from gift */
+    .gift-card{
+      position:absolute; left:50%; bottom:52px; transform:translate(-50%, 16px) scale(.96);
+      width:min(300px,72vw); background:#fff; border-radius:16px;
+      box-shadow:0 16px 40px rgba(255,95,162,.35), 0 8px 20px rgba(0,0,0,.08);
+      padding:18px 20px; text-align:center; opacity:0;
+      transition:transform var(--speed) var(--ease), opacity var(--speed) var(--ease);
+      border:3px solid #ffd6eb;
+    }
+    .gift-card.show{ transform:translate(-50%,-80px) scale(1); opacity:1; }
+    .gift-card h3{ margin:0 0 6px; font-size:20px; color:#ff3f8c; }
+    .gift-card p{ margin:0; font-size:clamp(16px,3.6vw,20px); }
+
+    /* Glow ring when cake appears */
+    .aura{
+      position:absolute; inset:auto 0 60px 0; margin:auto; width:360px; height:360px;
+      border-radius:50%; pointer-events:none;
+      background:radial-gradient(circle, rgba(255,255,255,.95) 0%, rgba(255,255,255,.0) 60%);
+      filter:blur(18px) saturate(110%); opacity:0; transform:scale(.9);
+      transition:opacity var(--speed) var(--ease), transform var(--speed) var(--ease);
+    }
+    .aura.show{ opacity:1; transform:scale(1); }
+
+    /* Buttons */
+    .actions{ margin:22px 0 0; display:flex; gap:10px; justify-content:center; flex-wrap:wrap }
+    .btn{
+      appearance:none; border:none; cursor:pointer; user-select:none; outline:none;
+      padding:14px 22px; border-radius:999px; font-weight:700; font-size:16px;
+      color:white; background:linear-gradient(135deg,var(--pink),var(--pink2));
+      box-shadow:0 10px 24px rgba(255,95,162,.35);
+      transition:transform .15s ease, opacity .2s ease, filter .15s ease;
+    }
+    .btn:hover{ transform:translateY(-1px) } .btn:active{ transform:translateY(0) }
+    .btn.secondary{
+      background:#ffeafb; color:#a4146a; box-shadow:none; border:1px solid #ffd6eb; font-weight:700;
+    }
+    .hidden{ display:none !important }
+    .show{ opacity:1 !important; transform:none !important }
+    .status{ margin-top:8px; font-size:14px; color:#16a34a; min-height:1.2em; }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .cake,.thai,h1,.btn,.aura,.gift-card,#giftWrap{transition:none !important}
+      .flame{animation:none}
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap" role="main">
+    <canvas id="confetti" class="confetti" aria-hidden="true"></canvas>
+    <div id="aura" class="aura" aria-hidden="true"></div>
+
+    <h1 id="headline" aria-live="polite">Happy Birthday!</h1>
+    <p class="lead">กดปุ่มเพื่อเริ่มฉลอง 🎉</p>
+    <p id="thai" class="thai">สุขสันต์วันเกิดนะครับ ขอให้มีความสุขมากๆ คิดหวังสิ่งใดก็ขอให้สมปรารถนา</p>
+
+    <!-- Cake -->
+    <svg id="cake" class="cake" viewBox="0 0 320 230" role="img" aria-label="Birthday cake with candles">
+      <defs>
+        <linearGradient id="gradCake" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0%" stop-color="#ffd6eb"/><stop offset="100%" stop-color="#ffb3d6"/>
+        </linearGradient>
+        <linearGradient id="icing" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#ffe8f4"/>
+        </linearGradient>
+        <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="b"/><feOffset dy="2" result="o"/>
+          <feMerge><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <ellipse cx="160" cy="205" rx="122" ry="14" fill="#f1f5f9"/>
+      <rect x="60" y="90" width="200" height="85" rx="14" fill="url(#gradCake)" filter="url(#soft)"/>
+      <path d="M60,100 h200 v22
+               c-12,6 -24,-6 -36,0 s-24,8 -36,0 s-24,-6 -36,0 s-24,8 -36,0 s-24,-6 -36,0 v-22 z"
+            fill="url(#icing)"/>
+      <!-- Sprinkles -->
+      <g opacity=".9">
+        <circle cx="90" cy="132" r="3" fill="#ff5fa2"/>
+        <circle cx="120" cy="139" r="3" fill="#a855f7"/>
+        <circle cx="160" cy="128" r="3" fill="#f97316"/>
+        <circle cx="210" cy="141" r="3" fill="#14b8a6"/>
+        <circle cx="190" cy="118" r="3" fill="#3b82f6"/>
+        <circle cx="140" cy="121" r="3" fill="#ef4444"/>
+      </g>
+      <!-- Candles -->
+      <g id="candles">
+        <rect x="110" y="56" width="12" height="34" rx="3" fill="#a855f7"/>
+        <rect x="154" y="46" width="12" height="44" rx="3" fill="#fb7185"/>
+        <rect x="198" y="56" width="12" height="34" rx="3" fill="#22c55e"/>
+      </g>
+      <!-- Flames & smoke -->
+      <g id="flames">
+        <g class="flame"><path d="M116,54 q6,-14 12,0 q-6,10 -12,0" fill="#ffd166"/></g>
+        <g class="flame"><path d="M160,44 q6,-14 12,0 q-6,10 -12,0" fill="#ffd166"/></g>
+        <g class="flame"><path d="M204,54 q6,-14 12,0 q-6,10 -12,0" fill="#ffd166"/></g>
+      </g>
+      <g id="smoke">
+        <circle cx="122" cy="52" r="3" fill="#cbd5e1"/>
+        <circle cx="166" cy="42" r="3" fill="#cbd5e1"/>
+        <circle cx="210" cy="52" r="3" fill="#cbd5e1"/>
+      </g>
+    </svg>
+
+    <!-- Gift + card -->
+    <div id="giftWrap" aria-label="Gift">
+      <!-- Card (HTML) -->
+      <div id="giftCard" class="gift-card" role="group" aria-label="Card">
+        <h3>🎁 Surprise</h3>
+        <p>ไปรับของขวัญที่เอก</p>
+      </div>
+      <!-- Gift (SVG) -->
+      <svg id="gift" viewBox="0 0 360 240" role="img" aria-label="Gift box">
+        <!-- shadow -->
+        <ellipse cx="180" cy="220" rx="130" ry="14" fill="#f1f5f9"/>
+        <!-- box base -->
+        <rect x="60" y="110" width="240" height="88" rx="14" fill="#ffc6dd"/>
+        <rect x="60" y="110" width="240" height="88" rx="14" fill="url(#ribbonShadow)" opacity=".08"/>
+        <!-- horizontal ribbon -->
+        <rect x="60" y="148" width="240" height="20" fill="#ff75b3"/>
+        <!-- vertical ribbon -->
+        <rect x="170" y="110" width="20" height="88" fill="#ff75b3"/>
+        <!-- lid -->
+        <g class="lid">
+          <rect x="52" y="90" width="256" height="36" rx="10" fill="#ffaad0"/>
+          <!-- bow -->
+          <path d="M180,90 c 0,0 -24,-30 -48,-14 s 0,40 20,28 c 20,-12 28,-14 28,-14"
+                fill="#ff5fa2"/>
+          <path d="M180,90 c 0,0 24,-30 48,-14 s 0,40 -20,28 c -20,-12 -28,-14 -28,-14"
+                fill="#ff5fa2"/>
+          <circle cx="180" cy="96" r="10" fill="#ff7fb8"/>
+        </g>
+        <defs>
+          <linearGradient id="ribbonShadow" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#000" stop-opacity=".3"/><stop offset="100%" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+
+    <!-- Controls -->
+    <div class="actions" aria-label="Actions">
+      <button id="start" class="btn" aria-label="Start">Start ✨</button>
+      <button id="blow" class="btn secondary hidden" aria-label="Blow out candles">Blow out candles</button>
+      <button id="openGift" class="btn secondary hidden" aria-label="Open gift">Open gift</button>
+      <button id="replay" class="btn secondary hidden" aria-label="Replay">Replay</button>
+    </div>
+    <div id="status" class="status" role="status" aria-live="polite"></div>
+  </main>
+
+  <script>
+    // ===== Editable content =====
+    const NAME = "พี่สาลี่"; // Optional name; not shown in title for simplicity
+    const THAI_MESSAGE = "สุขสันต์วันเกิดนะครับ ขอให้มีความสุขมากๆ คิดหวังสิ่งใดก็ขอให้สมปรารถนา";
+    const CARD_TEXT = "ไปรับของขวัญที่เอก";
+    const TIMINGS = { headline: 220, thai: 900, cake: 1500, buttons: 1850, confettiMs: 2600 };
+
+    // ===== Elements =====
+    const headline = document.getElementById('headline');
+    const thai = document.getElementById('thai');
+    const cake = document.getElementById('cake');
+    const aura = document.getElementById('aura');
+    const giftWrap = document.getElementById('giftWrap');
+    const gift = document.getElementById('gift');
+    const giftCard = document.getElementById('giftCard');
+
+    const startBtn = document.getElementById('start');
+    const blowBtn = document.getElementById('blow');
+    const openGiftBtn = document.getElementById('openGift');
+    const replayBtn = document.getElementById('replay');
+    const statusEl = document.getElementById('status');
+
+    // Confetti canvas
+    const canvas = document.getElementById('confetti');
+    const ctx = canvas.getContext('2d', { alpha: true });
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Set content
+    headline.textContent = `Happy Birthday${NAME ? " " + NAME : ""}!`;
+    thai.textContent = THAI_MESSAGE;
+    giftCard.querySelector('p').textContent = CARD_TEXT;
+
+    // ===== Canvas sizing =====
+    function sizeCanvas(){
+      const r = canvas.getBoundingClientRect();
+      const dpr = Math.max(1, devicePixelRatio || 1);
+      canvas.width = Math.floor(r.width * dpr);
+      canvas.height = Math.floor(r.height * dpr);
+      canvas.style.width = r.width + 'px';
+      canvas.style.height = r.height + 'px';
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+    sizeCanvas(); addEventListener('resize', sizeCanvas, { passive:true });
+
+    // ===== Confetti =====
+    const COLORS = ['#ff5fa2','#ffd1e6','#ff93c2','#f9a8d4','#f472b6','#f97316'];
+    let particles = [], raf = null, confettiEndAt = 0;
+
+    function spawnConfetti(n=160){
+      const rect = canvas.getBoundingClientRect();
+      for(let i=0;i<n;i++){
+        particles.push({
+          x: rect.width*0.5 + (Math.random()-0.5)*60,
+          y: rect.height*0.2,
+          vx: (Math.random()-0.5)*6.5,
+          vy: -6 - Math.random()*5,
+          g: 0.20 + Math.random()*0.06,
+          s: 2 + Math.random()*4,
+          rot: Math.random()*Math.PI,
+          vr: (Math.random()-0.5)*0.35,
+          color: COLORS[(Math.random()*COLORS.length)|0],
+          shape: Math.random()<.5 ? 'rect' : 'tri'
+        });
+      }
+    }
+    function step(){
+      const now = performance.now();
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      for(const p of particles){
+        p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        if(p.shape==='rect'){ ctx.fillRect(-p.s, -p.s, p.s*2, p.s*2); }
+        else{ ctx.beginPath(); ctx.moveTo(0,-p.s); ctx.lineTo(p.s,p.s); ctx.lineTo(-p.s,p.s); ctx.closePath(); ctx.fill(); }
+        ctx.restore();
+      }
+      particles = particles.filter(p => p.y < canvas.height + 40);
+      if(now < confettiEndAt || particles.length){ raf = requestAnimationFrame(step); }
+      else { cancelAnimationFrame(raf); raf = null; }
+    }
+    function launchConfetti(ms=TIMINGS.confettiMs){
+      if(reduceMotion) return;
+      particles.length = 0;
+      confettiEndAt = performance.now() + ms;
+      spawnConfetti(180);
+      if(!raf) raf = requestAnimationFrame(step);
+      const stream = setInterval(()=> spawnConfetti(22), 200);
+      setTimeout(()=> clearInterval(stream), ms);
+    }
+
+    // ===== Simple chime (optional) =====
+    let audioCtx = null;
+    function playChime(){
+      if(reduceMotion) return;
+      try{
+        const AC = window.AudioContext || window.webkitAudioContext;
+        audioCtx = audioCtx || new AC();
+        audioCtx.resume();
+        const now = audioCtx.currentTime;
+        const notes = [261.63,329.63,392.00,523.25]; // C E G C
+        notes.forEach((f,i)=>{
+          const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+          o.type='triangle'; o.frequency.value=f;
+          g.gain.setValueAtTime(0, now + i*0.22);
+          g.gain.linearRampToValueAtTime(0.25, now + i*0.22 + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + i*0.22 + 0.20);
+          o.connect(g).connect(audioCtx.destination);
+          o.start(now + i*0.22); o.stop(now + i*0.22 + 0.22);
+        });
+      }catch(e){}
+    }
+
+    // ===== Helpers =====
+    const show = el => el.classList.add('show');
+    const hide = el => el.classList.add('hidden');
+    const unhide = el => el.classList.remove('hidden');
+
+    function reset(){
+      [headline, thai, cake, giftWrap, giftCard, aura].forEach(el=> el.classList.remove('show'));
+      gift.classList.remove('open');
+      document.getElementById('flames').classList.remove('out');
+
+      cake.classList.remove('vanish');   // NEW: clear fade-out state
+      unhide(cake);                      // NEW: make it visible again
+
+      unhide(startBtn); hide(blowBtn); hide(openGiftBtn); hide(replayBtn);
+      statusEl.textContent = '';
+      particles.length = 0; ctx.clearRect(0,0,canvas.width,canvas.height);
+    }
+
+    function startCelebration(){
+      hide(startBtn);
+      launchConfetti(); playChime();
+      setTimeout(()=> show(headline), TIMINGS.headline);
+      setTimeout(()=> show(thai), TIMINGS.thai);
+      setTimeout(()=> { show(cake); aura.classList.add('show'); }, TIMINGS.cake);
+      setTimeout(()=> { unhide(blowBtn); unhide(replayBtn); }, TIMINGS.buttons);
+
+      if(reduceMotion){
+        [headline, thai, cake].forEach(show); aura.classList.add('show');
+        unhide(blowBtn); unhide(replayBtn);
+      }
+    }
+
+    function blowCandles(){
+      const flames = document.getElementById('flames');
+      if(!flames.classList.contains('out')){
+        flames.classList.add('out');
+        show(giftWrap);                               // gift comes in
+
+        // NEW: fade the cake out when the gift appears
+        cake.classList.remove('show');
+        cake.classList.add('vanish');
+        aura.classList.remove('show');
+        setTimeout(()=> hide(cake), 650);             // after the fade, remove from layout
+
+        statusEl.textContent = 'Candles blown out! 🕯️';
+        setTimeout(()=> { statusEl.textContent=''; unhide(openGiftBtn); }, 900);
+      }
+    }
+
+    function openGift(){
+      gift.classList.add('open');       // lift lid
+      show(giftCard);                   // pop the card
+      launchConfetti(2200);             // confetti again on reveal
+      statusEl.textContent = 'Surprise opened 🎁';
+      setTimeout(()=> statusEl.textContent='', 1500);
+    }
+
+    // Wire up
+    startBtn.addEventListener('click', startCelebration);
+    blowBtn.addEventListener('click', blowCandles);
+    openGiftBtn.addEventListener('click', openGift);
+    replayBtn.addEventListener('click', reset);
+
+    // Long-press the cake to blow out
+    let pressTimer=null;
+    cake.addEventListener('touchstart', ()=> pressTimer=setTimeout(blowCandles, 450), {passive:true});
+    cake.addEventListener('touchend', ()=> clearTimeout(pressTimer), {passive:true});
+    cake.addEventListener('mousedown', ()=> pressTimer=setTimeout(blowCandles, 450));
+    cake.addEventListener('mouseup', ()=> clearTimeout(pressTimer));
+  </script>
+</body>
+</html>
