@@ -32,7 +32,8 @@
       border-radius:var(--radius);
       box-shadow:var(--shadow);
       padding:clamp(18px,4vw,36px);
-      position:relative; overflow:hidden;
+      position:relative;
+      overflow:visible;               /* <-- allow card to show fully */
     }
     .confetti{ position:absolute; inset:0; pointer-events:none; border-radius:var(--radius); }
 
@@ -83,6 +84,7 @@
       margin:18px auto 0;
       position:relative;
       display:grid; place-items:center;
+      overflow:visible;                /* <-- ensure card isn't clipped */
       opacity:0; transform:translateY(18px) scale(.98);
       transition:opacity var(--speed) var(--ease), transform var(--speed) var(--ease);
     }
@@ -91,21 +93,26 @@
     #gift .lid{ transform-origin:50% 85%; transition:transform 550ms var(--ease); }
     #gift.open .lid{ transform:rotate(-34deg) translateY(-8px); }
 
-    /* Card from gift (always centered) */
+    /* Card from gift — centered everywhere */
     .gift-card{
       position:absolute;
       bottom:52px;
-      left:50%;
-      transform:translate(-50%, 16px) scale(.96);
-      width:min(300px,92%);
-      max-width:calc(100% - 16px);
+
+      /* solid horizontal centering */
+      left:0; right:0; margin:0 auto;
+
+      width:clamp(220px,92%,300px);
+      max-width:calc(100% - 20px);     /* keep inside white card padding */
       background:#fff; border-radius:16px;
       box-shadow:0 16px 40px rgba(255,95,162,.35), 0 8px 20px rgba(0,0,0,.08);
       padding:18px 20px; text-align:center; border:3px solid #ffd6eb;
+
+      /* move only on Y so X-centering never shifts */
+      transform:translateY(16px) scale(.96);
       opacity:0;
       transition:transform var(--speed) var(--ease), opacity var(--speed) var(--ease);
     }
-    .gift-card.show{ transform:translate(-50%, -80px) scale(1); opacity:1; }
+    .gift-card.show{ transform:translateY(-80px) scale(1); opacity:1; }
     .gift-card h3{ margin:0 0 6px; font-size:20px; color:#ff3f8c; }
     .gift-card p{ margin:0; font-size:clamp(16px,3.6vw,20px); }
 
@@ -130,7 +137,6 @@
       .btn{ padding:12px 16px; font-size:15px; }
       .actions{ gap:8px; }
     }
-
     @media (prefers-reduced-motion: reduce){
       .cake,.thai,h1,.btn,.aura,.gift-card,#giftWrap{transition:none !important}
       .flame{animation:none}
@@ -343,7 +349,7 @@
       document.getElementById('flames').classList.remove('out');
       cake.classList.remove('vanish');
       unhide(cake);
-      unhide(startBtn);                 // Show only Start at reset
+      unhide(startBtn);                 // only Start
       hide(blowBtn); hide(openGiftBtn); hide(replayBtn);
       statusEl.textContent = '';
       particles.length = 0; ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -355,7 +361,7 @@
       setTimeout(()=> show(headline), TIMINGS.headline);
       setTimeout(()=> show(thai), TIMINGS.thai);
       setTimeout(()=> { show(cake); aura.classList.add('show'); }, TIMINGS.cake);
-      setTimeout(()=> { unhide(blowBtn); /* don't show replay yet */ }, TIMINGS.buttons);
+      setTimeout(()=> { unhide(blowBtn); }, TIMINGS.buttons);
 
       if(reduceMotion){
         [headline, thai, cake].forEach(show); aura.classList.add('show');
@@ -367,9 +373,9 @@
       const flames = document.getElementById('flames');
       if(!flames.classList.contains('out')){
         flames.classList.add('out');
-        hide(blowBtn);                   // 🔥 Hide "Blow out candles" after use
-        show(giftWrap);                  // Show gift
-        cake.classList.remove('show');   // Fade cake away
+        hide(blowBtn);                   // hide after use
+        show(giftWrap);                  // show gift
+        cake.classList.remove('show');   // fade cake away
         cake.classList.add('vanish');
         aura.classList.remove('show');
         setTimeout(()=> hide(cake), 650);
@@ -379,11 +385,11 @@
     }
 
     function openGift(){
-      gift.classList.add('open');        // Lid opens
-      show(giftCard);                    // Card slides out
-      hide(openGiftBtn);                 // ❌ Hide "Open gift" once opened
-      launchConfetti(2200);              // Celebration
-      unhide(replayBtn);                 // ✅ Show Replay at the end only
+      gift.classList.add('open');        // lid opens
+      show(giftCard);                    // card slides out (centered)
+      hide(openGiftBtn);                 // hide open button
+      launchConfetti(2200);
+      unhide(replayBtn);                 // show Replay at the end
       statusEl.textContent = 'Surprise opened 🎁';
       setTimeout(()=> statusEl.textContent='', 1500);
     }
